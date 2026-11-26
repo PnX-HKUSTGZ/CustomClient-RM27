@@ -6,9 +6,12 @@ requiring zero GDScript files.
 ## Commands
 
 ```powershell
+# Run full local verification (dotnet build + dotnet test + Godot import + self-test)
+.\tools\verify.ps1
+
 $godot = Join-Path (Split-Path $env:GODOT_PATH -Parent) "Godot_v4.7.2-stable_mono_win64_console.exe"
 
-# Headless SceneTree self-test (CI-friendly)
+# Headless SceneTree self-test (also wired in .github/workflows/ci.yml)
 & $godot --headless --path "src\RmClient.App" -- --static-demo --self-test
 
 # Visible OpenGL window self-test (also exercises RmVideoSurface attachment)

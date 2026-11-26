@@ -58,4 +58,29 @@ public sealed class EventBusTests
 
         Assert.Equal(3, hits);
     }
+
+    [Fact]
+    public void HandlerExceptionIsIsolatedAndReportedWithoutBlockingOthers()
+    {
+        Type? capturedType = null;
+        Exception? capturedException = null;
+        var bus = new EventBus((eventType, ex) =>
+        {
+            capturedType = eventType;
+            capturedException = ex;
+        });
+
+        var beforeCount = 0;
+        var afterCount = 0;
+        using var s1 = bus.Subscribe<CreditsUpdatedEvent>(_ => beforeCount++);
+        using var s2 = bus.Subscribe<CreditsUpdatedEvent>(_ => throw new InvalidOperationException("boom"));
+        using var s3 = bus.Subscribe<CreditsUpdatedEvent>(_ => afterCount++);
+
+        bus.Publish(new CreditsUpdatedEvent(320));
+
+        Assert.Equal(1, beforeCount);
+        Assert.Equal(1, afterCount);
+        Assert.Equal(typeof(CreditsUpdatedEvent), capturedType);
+        Assert.IsType<InvalidOperationException>(capturedException);
+    }
 }

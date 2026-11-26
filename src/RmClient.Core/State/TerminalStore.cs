@@ -9,32 +9,23 @@ namespace RmClient.Core.State;
 
 /// <summary>
 /// Owns domain state slices and publishes single-purpose events on every state mutation.
-/// Completely decoupled from Godot scene nodes and network transports.
+/// Completely decoupled from Godot scene nodes, network transports, and demo fixtures.
 /// </summary>
 public sealed class TerminalStore
 {
     public const int MaxEvents = 50;
-    public const int DemoDurationSeconds = 116;
+    private const float FloatTolerance = 0.0001f;
 
-    public static readonly int[] DemoRobotIds = { 1, 2, 3, 4, 6, 7 };
-
-    public static readonly NormalizedPoint[] DemoRedPositions =
-    {
-        new(0.18f, 0.76f),
-        new(0.23f, 0.63f),
-        new(0.37f, 0.65f),
-        new(0.47f, 0.78f),
-        new(0.30f, 0.50f),
-        new(0.14f, 0.55f),
-    };
+    private readonly Func<MatchState> _initialStateFactory;
 
     public IEventBus Bus { get; }
     public MatchState State { get; private set; }
 
-    public TerminalStore(IEventBus? eventBus = null)
+    public TerminalStore(IEventBus? eventBus = null, Func<MatchState>? initialStateFactory = null)
     {
         Bus = eventBus ?? new EventBus();
-        State = CreateDemoState();
+        _initialStateFactory = initialStateFactory ?? DemoScenario.CreateInitialState;
+        State = _initialStateFactory();
     }
 
     /// <summary>
@@ -113,7 +104,7 @@ public sealed class TerminalStore
             return;
         }
         var nextSpeed = muzzleSpeed ?? robot.MuzzleSpeed;
-        if (robot.Ammo == ammo && Math.Abs(robot.MuzzleSpeed - nextSpeed) < 0.0001f)
+        if (robot.Ammo == ammo && Math.Abs(robot.MuzzleSpeed - nextSpeed) < FloatTolerance)
         {
             return;
         }
@@ -131,6 +122,11 @@ public sealed class TerminalStore
         }
         var clampedHeat = Math.Clamp(heat, 0f, robot.HeatLimit);
         var clampedPower = Math.Min(robot.PowerLimit, Math.Max(0f, power));
+        if (Math.Abs(robot.Heat - clampedHeat) < FloatTolerance
+            && Math.Abs(robot.Power - clampedPower) < FloatTolerance)
+        {
+            return;
+        }
         robot.Heat = clampedHeat;
         robot.Power = clampedPower;
         Bus.Publish(new RobotHeatPowerUpdatedEvent(
@@ -149,11 +145,14 @@ public sealed class TerminalStore
         {
             return;
         }
-        robot.ChassisEnergy = chassisEnergy;
-        if (bufferEnergy.HasValue)
+        var nextBuffer = bufferEnergy ?? robot.BufferEnergy;
+        if (Math.Abs(robot.ChassisEnergy - chassisEnergy) < FloatTolerance
+            && Math.Abs(robot.BufferEnergy - nextBuffer) < FloatTolerance)
         {
-            robot.BufferEnergy = bufferEnergy.Value;
+            return;
         }
+        robot.ChassisEnergy = chassisEnergy;
+        robot.BufferEnergy = nextBuffer;
         Bus.Publish(new RobotEnergyUpdatedEvent(side, robotId, robot.ChassisEnergy, robot.BufferEnergy));
     }
 
@@ -230,7 +229,12 @@ public sealed class TerminalStore
 
     public void SetConnectionStatus(string label, bool connected)
     {
+        if (State.ConnectionLabel == label && State.IsConnected == connected)
+        {
+            return;
+        }
         State.ConnectionLabel = label;
+        State.IsConnected = connected;
         Bus.Publish(new ConnectionStatusChangedEvent(label, connected));
     }
 
@@ -260,73 +264,11 @@ public sealed class TerminalStore
     }
 
     /// <summary>
-    /// Replaces the state with a fresh demo baseline and notifies subscribers.
+    /// Replaces the state with a fresh baseline from the configured factory and notifies subscribers.
     /// </summary>
     public void ResetDemo()
     {
-        State = CreateDemoState();
+        State = _initialStateFactory();
         Bus.Publish(new DemoStateResetEvent());
-    }
-
-    public static MatchState CreateDemoState()
-    {
-        var state = new MatchState
-        {
-            RemainingSeconds = DemoDurationSeconds,
-            Red = CreateDemoTeam(TeamSide.Red),
-            Blue = CreateDemoTeam(TeamSide.Blue),
-        };
-
-        // Simulated HUD module states, not real hardware/driver detection.
-        state.Modules["chassis"] = true;
-        state.Modules["gimbal"] = true;
-        state.Modules["shooter"] = true;
-        state.Modules["referee"] = true;
-        state.Modules["video"] = false;
-        state.Modules["custom_terminal"] = false;
-
-        state.Events.Add("演示：快照已加载，未连接赛事引擎或通信后端。");
-        state.Events.Add("演示：红方 3 号步兵等级 1，升级进度 65%。");
-        state.Events.Add("演示：当前金币 650，非真实比赛结算。");
-        state.Events.Add("演示：购买、兑换和战术指令只修改本地数据。");
-        return state;
-    }
-
-    private static TeamState CreateDemoTeam(TeamSide side)
-    {
-        var team = new TeamState
-        {
-            Side = side,
-            Title = side.ToDisplayTitle(),
-        };
-
-        for (var i = 0; i < DemoRobotIds.Length; i++)
-        {
-            var id = DemoRobotIds[i];
-            var (title, maxHealth) = id switch
-            {
-                1 => ("英雄", 350),
-                2 => ("重装", 300),
-                3 or 4 => ("步兵", 225),
-                6 => ("空中", 200),
-                7 => ("哨兵", 400),
-                _ => ("机器人", 225),
-            };
-
-            var position = side == TeamSide.Blue
-                ? DemoRedPositions[i].Mirrored()
-                : DemoRedPositions[i];
-
-            team.Robots.Add(new RobotState
-            {
-                Id = id,
-                Title = title,
-                MaxHealth = maxHealth,
-                Health = maxHealth,
-                MapPosition = position,
-            });
-        }
-
-        return team;
     }
 }

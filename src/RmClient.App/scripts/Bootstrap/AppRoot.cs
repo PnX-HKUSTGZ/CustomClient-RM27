@@ -61,8 +61,9 @@ public partial class AppRoot : Control
         _customUiLayer = GetNode<CustomUiLayer>("%CustomUiLayer");
         _toast = GetNode<Label>("%Toast");
 
-        Bus = new EventBus();
-        Store = new TerminalStore(Bus);
+        Bus = new EventBus((eventType, ex) =>
+            GD.PushError($"[EventBus] Handler for {eventType.Name} failed: {ex}"));
+        Store = new TerminalStore(Bus, DemoScenario.CreateInitialState);
         Commands = new TerminalCommands(Store);
         Settings = new UserSettingsService(Bus, new GodotSettingsRepository());
         Settings.Load();

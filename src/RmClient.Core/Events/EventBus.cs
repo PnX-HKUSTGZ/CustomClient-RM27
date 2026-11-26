@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RmClient.Core.Events;
 
@@ -22,12 +23,19 @@ public interface IEventBus
 
 /// <summary>
 /// Default synchronous in-process event bus.
-/// Each event type maintains an isolated subscriber list so handlers remain decoupled.
+/// Each event type maintains an isolated subscriber list, and handler exceptions are
+/// caught and routed to an error logger so one failing subscriber never blocks others.
 /// </summary>
 public sealed class EventBus : IEventBus
 {
     private readonly object _gate = new();
     private readonly Dictionary<Type, List<Delegate>> _subscribers = new();
+    private readonly Action<Type, Exception> _onHandlerError;
+
+    public EventBus(Action<Type, Exception>? onHandlerError = null)
+    {
+        _onHandlerError = onHandlerError ?? DefaultErrorLogger;
+    }
 
     public IDisposable Subscribe<TEvent>(Action<TEvent> handler) where TEvent : IDomainEvent
     {
@@ -50,9 +58,10 @@ public sealed class EventBus : IEventBus
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
         Delegate[] snapshot;
+        var eventType = typeof(TEvent);
         lock (_gate)
         {
-            if (!_subscribers.TryGetValue(typeof(TEvent), out var list) || list.Count == 0)
+            if (!_subscribers.TryGetValue(eventType, out var list) || list.Count == 0)
             {
                 return;
             }
@@ -61,8 +70,20 @@ public sealed class EventBus : IEventBus
 
         foreach (var entry in snapshot)
         {
-            ((Action<TEvent>)entry).Invoke(domainEvent);
+            try
+            {
+                ((Action<TEvent>)entry).Invoke(domainEvent);
+            }
+            catch (Exception ex)
+            {
+                _onHandlerError(eventType, ex);
+            }
         }
+    }
+
+    private static void DefaultErrorLogger(Type eventType, Exception exception)
+    {
+        Trace.TraceError($"[EventBus] Handler for {eventType.Name} threw {exception.GetType().Name}: {exception.Message}");
     }
 
     private void Unsubscribe(Type eventType, Delegate handler)

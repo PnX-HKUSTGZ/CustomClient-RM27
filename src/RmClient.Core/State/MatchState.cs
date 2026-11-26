@@ -74,7 +74,7 @@ public sealed class TeamState
 
 public sealed class MatchState
 {
-    public int RemainingSeconds { get; set; } = TerminalStore.DemoDurationSeconds;
+    public int RemainingSeconds { get; set; } = DemoScenario.DurationSeconds;
     public int RoundIndex { get; set; } = 1;
     public int Credits { get; set; } = 650;
     public TeamState Red { get; set; } = new() { Side = TeamSide.Red, Title = "红方" };
@@ -85,6 +85,7 @@ public sealed class MatchState
     public List<string> Events { get; } = new();
     public string RobotMessage { get; set; } = "等待本地演示指令";
     public string ConnectionLabel { get; set; } = "演示数据 · 未连接";
+    public bool IsConnected { get; set; }
     public string VideoLabel { get; set; } = "图传 · 未启用";
 
     public TeamState GetTeam(TeamSide side) => side == TeamSide.Red ? Red : Blue;

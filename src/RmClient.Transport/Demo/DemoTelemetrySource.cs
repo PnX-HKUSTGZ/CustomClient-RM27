@@ -75,7 +75,7 @@ public sealed class DemoTelemetrySource : ITelemetrySource
         var nextSeconds = state.RemainingSeconds - 1;
         _store.UpdateClock(nextSeconds);
 
-        var elapsed = TerminalStore.DemoDurationSeconds - nextSeconds;
+        var elapsed = DemoScenario.DurationSeconds - nextSeconds;
         foreach (var team in new[] { state.Red, state.Blue })
         {
             foreach (var robot in team.Robots)

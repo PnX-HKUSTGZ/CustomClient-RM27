@@ -33,7 +33,7 @@ public sealed class TerminalStoreTests
         foreach (var team in new[] { state.Red, state.Blue })
         {
             Assert.Equal(6, team.Robots.Count);
-            Assert.Equal(TerminalStore.DemoRobotIds, team.Robots.Select(r => r.Id).ToArray());
+            Assert.Equal(DemoScenario.RobotIds, team.Robots.Select(r => r.Id).ToArray());
             foreach (var robot in team.Robots)
             {
                 Assert.Equal(150, robot.Ammo);
@@ -125,5 +125,57 @@ public sealed class TerminalStoreTests
         Assert.NotNull(lastModule);
         Assert.Equal("video", lastModule!.ModuleKey);
         Assert.True(lastModule.Online);
+    }
+
+    [Fact]
+    public void SetConnectionStatusDeduplicatesUnchangedValues()
+    {
+        var store = new TerminalStore();
+        var count = 0;
+        using var sub = store.Bus.Subscribe<ConnectionStatusChangedEvent>(_ => count++);
+
+        // Same as initial defaults ("演示数据 · 未连接", false) -> no event.
+        store.SetConnectionStatus("演示数据 · 未连接", false);
+        Assert.Equal(0, count);
+
+        store.SetConnectionStatus("MQTT 已连接", true);
+        store.SetConnectionStatus("MQTT 已连接", true);
+        Assert.Equal(1, count);
+        Assert.True(store.State.IsConnected);
+
+        store.SetConnectionStatus("MQTT 重连中", false);
+        Assert.Equal(2, count);
+        Assert.False(store.State.IsConnected);
+    }
+
+    [Fact]
+    public void UpdateRobotHeatAndPowerDeduplicatesWithinTolerance()
+    {
+        var store = new TerminalStore();
+        var count = 0;
+        using var sub = store.Bus.Subscribe<RobotHeatPowerUpdatedEvent>(_ => count++);
+
+        store.UpdateRobotHeatAndPower(TeamSide.Red, 3, 50.0f, 60.0f);
+        store.UpdateRobotHeatAndPower(TeamSide.Red, 3, 50.00005f, 60.00005f);
+        Assert.Equal(1, count);
+
+        store.UpdateRobotHeatAndPower(TeamSide.Red, 3, 50.5f, 60.0f);
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public void CustomInitialStateFactoryDecouplesStoreFromDemoScenario()
+    {
+        var store = new TerminalStore(initialStateFactory: () => new MatchState
+        {
+            RemainingSeconds = 300,
+            Credits = 0,
+            ConnectionLabel = "等待连接",
+        });
+
+        Assert.Equal(300, store.State.RemainingSeconds);
+        Assert.Equal(0, store.State.Credits);
+        Assert.Equal("等待连接", store.State.ConnectionLabel);
+        Assert.Empty(store.State.Red.Robots);
     }
 }

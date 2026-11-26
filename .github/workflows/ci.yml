@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore, build, and run pure C# unit tests
+        shell: pwsh
+        run: |
+          dotnet restore RmClient.sln
+          dotnet build RmClient.sln --no-restore --verbosity minimal
+          dotnet test RmClient.sln --no-build --verbosity normal
+
+      - name: Cache Godot 4.7.2 .NET
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: C:\godot-4.7.2-mono
+          key: godot-4.7.2-stable-mono-win64
+
+      - name: Download Godot 4.7.2 .NET
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $zip = "$env:TEMP\Godot_v4.7.2-stable_mono_win64.zip"
+          Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_mono_win64.zip" -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath "C:\godot-4.7.2-mono" -Force
+
+      - name: Run Godot headless import and C# SceneTree self-test
+        shell: pwsh
+        run: |
+          $consoleExe = Get-ChildItem "C:\godot-4.7.2-mono" -Recurse -Filter "*_console.exe" | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $consoleExe) { throw "Godot console executable not found" }
+          & $consoleExe --headless --path "src\RmClient.App" --import
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $consoleExe --headless --path "src\RmClient.App" -- --static-demo --self-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

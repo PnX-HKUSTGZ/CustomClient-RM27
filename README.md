@@ -1,18 +1,13 @@
 # CustomClient RM27
 
-> 自定义选手端 —— RoboMaster RM27 赛季，基于 Godot 4.7.2 .NET 与 .NET 8。
+> RM27赛季基于 Godot 4.7.2 .NET与.NET 8的自定义选手端
 
 ## 项目简介
 
 本仓库是 RM27 赛季的自定义选手端工程，最终目标是完全替代官方选手端，并支持多自定义客户端协同、按车种定制 HUD 以及自定义外设扩展。
 
-本项目是在前期 GDScript 界面验证版基础上的全量 C# 架构重构版本：前端 UI 与通信协议严格分层，采用单一职责的独立事件总线（`IEventBus`）驱动界面局部刷新，图传采用独立高性能解码链路（`addons/rm_video`）。详细架构设计与事件清单见 [docs/architecture.md](docs/architecture.md)。
+详细架构设计与事件清单见 [docs/architecture.md](docs/architecture.md)。
 
-## 项目状态
-
-> :white_check_mark: **架构迁移完成（C# / .NET 8）**：原 GDScript 验证版已全量等价迁移至 `RmClient.Core` / `RmClient.Transport` / `RmClient.App` 三层纯 C# 架构；完成 `EventBus` 异常隔离、高频状态去重、`DemoScenario` 解耦、14 个场景与 11 个操作面板重绑、`addons/rm_video` 图传桥接，以及本地一键验证脚本与 GitHub Actions CI。
->
-> **下一步**：接入 RM2027 V1.0.0 MQTT + Protobuf 事件化传输（复用 `proto/`）、柔化视觉风格与主 HUD 上半区车种定制槽位、自定义外设驱动及多端协同。
 
 ## 运行环境
 
@@ -112,5 +107,4 @@ CustomClient-RM27/
 * 所有状态变更通过 `IEventBus` 发布单一含义的独立事件；后台线程回调必须经 `IMainThreadDispatcher` 切回主线程。
 
 ## 许可证
-
-待定（`addons/rm_video` 内静态链接的 FFmpeg 遵循 LGPL-2.1-or-later，对外分发时需附带上游重链接材料）。
+LGPL-2.1-or-later

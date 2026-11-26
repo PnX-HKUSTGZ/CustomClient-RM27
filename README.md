@@ -105,6 +105,3 @@ CustomClient-RM27/
 
 * 仓库内除面向操作手的 UI 显示文案与项目文档外，所有目录名、文件名、代码、注释与标识符统一使用英文。
 * 所有状态变更通过 `IEventBus` 发布单一含义的独立事件；后台线程回调必须经 `IMainThreadDispatcher` 切回主线程。
-
-## 许可证
-LGPL-2.1-or-later

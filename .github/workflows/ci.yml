@@ -19,13 +19,6 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore, build, and run pure C# unit tests
-        shell: pwsh
-        run: |
-          dotnet restore RmClient.sln
-          dotnet build RmClient.sln --no-restore --verbosity minimal
-          dotnet test RmClient.sln --no-build --verbosity normal
-
       - name: Cache Godot 4.7.2 .NET
         id: godot-cache
         uses: actions/cache@v4
@@ -41,12 +34,6 @@ jobs:
           Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_mono_win64.zip" -OutFile $zip
           Expand-Archive -Path $zip -DestinationPath "C:\godot-4.7.2-mono" -Force
 
-      - name: Run Godot headless import and C# SceneTree self-test
+      - name: Run full verification (build, unit tests, Godot import & self-test)
         shell: pwsh
-        run: |
-          $consoleExe = Get-ChildItem "C:\godot-4.7.2-mono" -Recurse -Filter "*_console.exe" | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $consoleExe) { throw "Godot console executable not found" }
-          & $consoleExe --headless --path "src\RmClient.App" --import
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $consoleExe --headless --path "src\RmClient.App" -- --static-demo --self-test
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        run: .\tools\verify.ps1 -GodotConsolePath "C:\godot-4.7.2-mono"

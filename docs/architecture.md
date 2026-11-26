@@ -65,9 +65,10 @@ rm-custom-client/
 解决方案划分为三个 `.NET` 程序集，依赖方向保持单向（`App` → `Transport` → `Core`）：
 
 ```mermaid
+%%{init: {'flowchart': {'padding': 20}}}%%
 flowchart LR
     subgraph Transport["RmClient.Transport"]
-        Source["遥测源 / 外设 / MQTT"]
+        Source["Telemetry / Peripheral / MQTT<br/>遥测源与外设"]
     end
 
     subgraph Core["RmClient.Core"]

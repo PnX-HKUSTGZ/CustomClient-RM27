@@ -1,69 +1,116 @@
-# RoboMaster Custom Client (RM2027)
+# CustomClient RM27
 
-Event-driven, layered C# custom operator terminal built on **Godot 4.7.2 .NET** and **.NET 8**.
-All code, comments, identifiers, filenames, and directories use English; only user-facing UI strings remain in Chinese.
+> 自定义选手端 —— RoboMaster RM27 赛季，基于 Godot 4.7.2 .NET 与 .NET 8。
 
-## Architecture Overview
+## 项目简介
 
-Strict unidirectional dependencies across three .NET assemblies:
+本仓库是 RM27 赛季的自定义选手端工程，最终目标是完全替代官方选手端，并支持多自定义客户端协同、按车种定制 HUD 以及自定义外设扩展。
 
-```text
-RmClient.App        (Godot 4.7.2 .NET — scenes, HUD, 11 modal panels, input, rm_video bridge)
-   ├──▶ RmClient.Transport (Pure C# — DemoTelemetrySource, PeripheralHub, reserved MQTT/RM2027/MultiClient)
-   └──▶ RmClient.Core      (Pure C# — zero Godot/network dependencies: EventBus, events, state, commands, settings)
-```
+本项目是在前期 GDScript 界面验证版基础上的全量 C# 架构重构版本：前端 UI 与通信协议严格分层，采用单一职责的独立事件总线（`IEventBus`）驱动界面局部刷新，图传采用独立高性能解码链路（`addons/rm_video`）。详细架构设计与事件清单见 [docs/architecture.md](docs/architecture.md)。
 
-See [docs/architecture.md](docs/architecture.md) for detailed module boundaries, event contracts, and reserved extension points.
+## 项目状态
 
-## Prerequisites
+> :white_check_mark: **架构迁移完成（C# / .NET 8）**：原 GDScript 验证版已全量等价迁移至 `RmClient.Core` / `RmClient.Transport` / `RmClient.App` 三层纯 C# 架构；完成 `EventBus` 异常隔离、高频状态去重、`DemoScenario` 解耦、14 个场景与 11 个操作面板重绑、`addons/rm_video` 图传桥接，以及本地一键验证脚本与 GitHub Actions CI。
+>
+> **下一步**：接入 RM2027 V1.0.0 MQTT + Protobuf 事件化传输（复用 `proto/`）、柔化视觉风格与主 HUD 上半区车种定制槽位、自定义外设驱动及多端协同。
 
-- **.NET 8 SDK** (verified with `8.0.427`)
-- **Godot 4.7.2 .NET** (`4.7.2.stable.mono`)
+## 运行环境
 
-## Build & Test
+| 项目 | 说明 |
+| --- | --- |
+| 目标运行环境 | Windows 11 x64（Godot 4.7.2 .NET，`GL Compatibility` 渲染器） |
+| 核心框架 | .NET 8 SDK（已验证 `8.0.427`）+ Godot 4.7.2 .NET（`4.7.2.stable.mono`） |
+| 测试框架 | xUnit（纯 C# 单元测试）+ Godot C# SceneTree 无头自检（`--self-test`） |
+| 原生图传扩展 | `addons/rm_video`（来自 `PnX-HKUSTGZ/rm_udp_streamer`，UDP 3334 HEVC 硬解/软解） |
+
+## 快速开始
 
 ```powershell
-# Build all projects and run pure C# unit tests (Core + Transport)
+# 一键全量验证（dotnet build → dotnet test → Godot 资产导入 → C# SceneTree 自检）
+.\tools\verify.ps1
+
+# 仅编译并运行纯 C# 单元测试（无需安装 Godot）
 dotnet test RmClient.sln
 
-# Import Godot assets and run headless C# SceneTree self-test
+# 手动运行 Godot 无头自检（推荐直接调用安装目录的 *_console.exe，避免 WinGet shim 挂起）
 $godot = Join-Path (Split-Path $env:GODOT_PATH -Parent) "Godot_v4.7.2-stable_mono_win64_console.exe"
 & $godot --headless --path "src\RmClient.App" --import
 & $godot --headless --path "src\RmClient.App" -- --static-demo --self-test
 
-# Launch the interactive client window
+# 启动交互式客户端窗口
 & $godot --path "src\RmClient.App"
+
+# 常用启动参数（放在 -- 之后）
+# --static-demo          固定演示时间，不推进倒计时
+# --no-video             禁用 UDP 图传接收
+# --no-ui-motion         关闭轻量界面过渡动效
+# --video-port=3334      临时覆盖图传监听端口（支持 --video-bind=IP / --video-source=IP）
 ```
 
-> Note: On Windows with WinGet installations, prefer the direct `Godot_v4.7.2-stable_mono_win64_console.exe` binary over the WinGet shim when running headless `.NET` commands.
+## 核心架构与目录结构
 
-## Controls
+三层 `.NET` 程序集保持严格单向依赖：`RmClient.App` → `RmClient.Transport` → `RmClient.Core`。`Core` 与 `Transport` 零 `Godot` 依赖，UI 层严禁直接引用 MQTT/Protobuf 或原生图传类。
 
-| Shortcut | Action |
-|---|---|
-| `Tab` (hold) | Scoreboard panel (restores previous panel on release) |
-| `` ` `` / `~` (hold) | Modules & damage summary panel |
-| `F12` (hold) | Shortcut help panel |
-| `P` | Settings panel (demo login, FPS/video, hardware, UI toggles) |
-| `M` | Tactical map panel (`A` attack / `B` defend / `I` alert, left-click mark, right-click undo) |
-| `O` / `I` | 17 mm / 42 mm ammo supply panel with two-step confirmation |
-| `H` | Remote exchange panel with two-step confirmation |
-| `F` / `K` | Rune / Hero deployment local demo panels |
-| `Esc` | Close active panel |
-| `F5` / `F6` / `F8` | Demo-only: reset state / pause or resume clock / settlement panel |
+```text
+CustomClient-RM27/
+├── RmClient.sln                      # .NET 8 解决方案入口
+├── Directory.Build.props             # 统一 C# 语言版本、Nullable 与编译选项
+├── .github/workflows/ci.yml          # GitHub Actions CI（复用 tools/verify.ps1）
+├── docs/
+│   └── architecture.md               # 完整架构设计、Mermaid 架构/时序图与事件清单
+├── proto/                            # RM2027 V1.0.0 .proto 协议定义（与后端同步）
+├── tools/
+│   ├── verify.ps1                    # 本地与 CI 共用的一键验证脚本
+│   └── send_hevc.py                  # 本机 HEVC UDP 图传回环测试发包脚本
+├── src/
+│   ├── RmClient.Core/                # 纯 C# 领域层：EventBus、单一职责事件、TerminalStore、TerminalCommands、UserSettings
+│   │   └── Profiles/                 # [预留] 车种配置与 HUD 槽位布局
+│   ├── RmClient.Transport/           # 纯 C# 传输层：DemoTelemetrySource、PeripheralHub、主线程派发抽象
+│   │   ├── Mqtt/                     # [预留] MQTTnet 客户端与重连管理
+│   │   ├── Protocol/Rm2027/          # [预留] RM2027 Protobuf 编解码与事件映射
+│   │   └── MultiClient/              # [预留] 多自定义客户端协同
+│   └── RmClient.App/                 # Godot 4.7.2 .NET 工程（场景、HUD、11 个面板、主题、图传桥接）
+│       ├── addons/rm_video/          # 原生图传 GDExtension（rm_video.dll / librm_video.so）
+│       ├── assets/                   # 图标、头像、参考贴图与主题资源
+│       ├── scenes/                   # main.tscn、hud/battle_hud.tscn、panels/*.tscn
+│       └── scripts/
+│           ├── Bootstrap/            # AppRoot、GodotMainThreadDispatcher、AppSelfTest
+│           ├── Video/                # VideoLink（封装 rm_video 与 HEVC 参数缓存）
+│           ├── Settings/             # GodotSettingsRepository（ConfigFile 持久化）
+│           ├── Theme/                # UiKit、UiMotion
+│           └── Ui/                   # BattleHud、8 个组件、PanelHost、11 个面板及 Widgets/CustomProtocol 预留
+└── tests/
+    ├── RmClient.Core.Tests/          # Core 单元测试（EventBus、Store、Commands、Settings）
+    ├── RmClient.Transport.Tests/     # Transport 单元测试（DemoTelemetrySource、PeripheralHub）
+    └── GodotIntegration/             # Godot C# SceneTree 集成自检说明
+```
 
-## Image Transmission (`addons/rm_video`)
+## 操作快捷键
 
-Integrates the native `rm_video` GDExtension (`RmVideoSession` + `RmVideoSurface`, UDP port `3334`, 8-byte big-endian header + HEVC) through `scripts/Video/VideoLink.cs` and `scripts/Ui/Components/VideoSurface.cs`.
-CLI overrides after `--`: `--no-video`, `--video-port=N`, `--video-bind=IP`, `--video-source=IP`, `--no-ui-motion`, `--static-demo`.
+| 快捷键 | 行为 |
+| --- | --- |
+| `Tab`（按住） | 双方机器人状态记分板（松开恢复之前面板） |
+| `` ` `` / `~`（按住） | 模块状态与伤害统计面板 |
+| `F12`（按住） | 快捷键帮助面板 |
+| `P` | 设置面板（演示登录、帧率/图传、硬件、UI 开关） |
+| `M` | 战术大地图（`A` 进攻 / `B` 防守 / `I` 警戒，左键标记，右键撤回） |
+| `O` / `I` | 17 mm / 42 mm 弹丸补给面板（二次确认） |
+| `H` | 远程兑换面板（二次确认） |
+| `F` / `K` | 能量机关 / 英雄部署本地演示面板 |
+| `Esc` | 关闭当前面板 |
+| `F5` / `F6` / `F8` | 演示专用：重置状态 / 暂停或继续计时 / 查看结算面板 |
 
-## Reserved Extension Directories
+## 文档索引
 
-The following folders are scaffolded for upcoming phases and intentionally contain no business implementation yet:
+* [docs/architecture.md](docs/architecture.md)：项目分层架构、单一职责事件清单、图传与面板生命周期说明
+* [tests/GodotIntegration/README.md](tests/GodotIntegration/README.md)：Godot C# 无头与可见窗口自检命令及覆盖项
+* [src/RmClient.App/addons/rm_video/SOURCE.md](src/RmClient.App/addons/rm_video/SOURCE.md)：原生图传扩展来源与 LGPL 说明
 
-- `src/RmClient.Transport/Mqtt/` — MQTTnet client & reconnect lifecycle
-- `src/RmClient.Transport/Protocol/Rm2027/` — RM2027 V1.0.0 Protobuf codecs & event mappers (using `proto/*.proto`)
-- `src/RmClient.Transport/MultiClient/` — Multi-station session identity & sync
-- `src/RmClient.Core/Profiles/` — Vehicle profiles & configurable HUD slot layouts
-- `src/RmClient.App/scripts/Ui/Widgets/` — Vehicle-specific modular HUD widgets
-- `src/RmClient.App/scripts/Ui/CustomProtocol/` — Official `0x0310`/`0x0311` custom graphic UI renderer
+## 命名与开发约定
+
+* 仓库内除面向操作手的 UI 显示文案与项目文档外，所有目录名、文件名、代码、注释与标识符统一使用英文。
+* 所有状态变更通过 `IEventBus` 发布单一含义的独立事件；后台线程回调必须经 `IMainThreadDispatcher` 切回主线程。
+
+## 许可证
+
+待定（`addons/rm_video` 内静态链接的 FFmpeg 遵循 LGPL-2.1-or-later，对外分发时需附带上游重链接材料）。

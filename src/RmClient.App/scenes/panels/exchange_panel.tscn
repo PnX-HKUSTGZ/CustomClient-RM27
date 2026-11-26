@@ -1,0 +1,80 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/Ui/Panels/ExchangePanel.cs" id="1"]
+[ext_resource type="Theme" path="res://assets/theme/official_theme.tres" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="Frame"]
+bg_color = Color(0.031, 0.047, 0.071, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.83, 0.89, 0.16)
+
+[sub_resource type="StyleBoxFlat" id="Section"]
+bg_color = Color(0.06, 0.08, 0.11, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.83, 0.89, 0.1)
+
+[node name="ExchangePanel" type="Panel"]
+visible = true
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 920.0
+offset_bottom = 530.0
+theme = ExtResource("2")
+theme_override_styles/panel = SubResource("Frame")
+script = ExtResource("1")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 810.0
+offset_bottom = 52.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.886, 0.902, 0.922, 1)
+theme_override_font_sizes/font_size = 23
+text = "远程兑换 · H"
+
+[node name="Close" type="Button" parent="."]
+layout_mode = 0
+offset_left = 834.0
+offset_top = 12.0
+offset_right = 904.0
+offset_bottom = 46.0
+text = "关闭"
+
+[node name="Body" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Footer" type="Label" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 484.0
+offset_right = 900.0
+offset_bottom = 522.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.592, 0.631, 0.678, 1)
+theme_override_font_sizes/font_size = 15
+text = "本地演示 · 未连接真实设备"
+text_overrun_behavior = 3
+
+[node name="Exchange" type="Panel" parent="Body"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 84.0
+offset_right = 896.0
+offset_bottom = 424.0
+mouse_filter = 1
+theme_override_styles/panel = SubResource("Section")

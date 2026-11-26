@@ -1,0 +1,26 @@
+# .NET / C#
+bin/
+obj/
+!src/RmClient.App/addons/rm_video/bin/
+!src/RmClient.App/addons/rm_video/bin/**
+*.user
+*.suo
+*.cache
+.vs/
+TestResults/
+
+# Godot 4+
+.godot/
+*.translation
+export_presets.cfg
+
+# Artifacts & logs
+artifacts/
+*.log
+*.tmp
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*.log

@@ -1,0 +1,8 @@
+{
+  "source_manual": "RoboMaster 2026 机甲大师超级对抗赛选手端界面说明手册-学生版（202607）.pdf",
+  "sha256": "98e696e20023ad6e46926608e7c29b0b4cf49159de33ed21864006921801ff0d",
+  "source_pdf_page": 3,
+  "usage": "Local interface reconstruction validation. No redistribution license is implied.",
+  "map": "2026 manual minimap crop; not a calibrated RM2027 field map.",
+  "hud": "No complete screenshot is used as a UI layer. Text, bars and interactions are native Godot controls."
+}

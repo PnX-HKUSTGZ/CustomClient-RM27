@@ -1,0 +1,200 @@
+{
+  "source_manual": "C:\\Users\\Tobby Tian\\DeskBox\\长期\\robomaster\\自定义客户端\\规则\\RoboMaster 2026 机甲大师超级对抗赛选手端界面说明手册-学生版（202607）.pdf",
+  "source_sha256": "98e696e20023ad6e46926608e7c29b0b4cf49159de33ed21864006921801ff0d",
+  "page_numbering": "1-based PDF page, not printed footer",
+  "output": "256x256 RGBA PNG; transparent antialiased circular edge; no added text or frame",
+  "limitations": "Clean Tab portraits are 66px native. Main portraits use honest same-robot Tab patches where badges occluded art. Sentry and blue aerial are explicitly thumbnail fallbacks, not recolored circular portraits.",
+  "portraits": {
+    "hero_red.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        476,
+        528
+      ],
+      "circle_radius_px": 33,
+      "method": "Clean Tab-row portrait; number is outside crop; faction rim excluded by inner circular crop.",
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "engineer_red.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        476,
+        626
+      ],
+      "circle_radius_px": 33,
+      "method": "Clean Tab-row portrait; number is outside crop; faction rim excluded by inner circular crop.",
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "infantry_red.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        476,
+        724
+      ],
+      "circle_radius_px": 33,
+      "method": "High-resolution main portrait; top-left level/lock and bottom number replaced by same-role same-side clean Tab portrait pixels. No recoloring.",
+      "main_source": {
+        "pdf_page": 9,
+        "image_xref": 761,
+        "circle_center_px": [
+          198,
+          151
+        ],
+        "circle_radius_px": 116
+      },
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "hero_blue.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        1266,
+        528
+      ],
+      "circle_radius_px": 33,
+      "method": "Main portrait with level and number regions replaced by same-role same-side clean Tab pixels. No recoloring.",
+      "main_source": {
+        "pdf_page": 9,
+        "image_xref": 880,
+        "circle_center_px": [
+          89,
+          86
+        ],
+        "circle_radius_px": 61
+      },
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "engineer_blue.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        1266,
+        626
+      ],
+      "circle_radius_px": 33,
+      "method": "Clean Tab-row portrait; number is outside crop; faction rim excluded by inner circular crop.",
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "infantry_blue.png": {
+      "pdf_page": 21,
+      "image_xref": 1853,
+      "embedded_image_size": [
+        2240,
+        1259
+      ],
+      "circle_center_px": [
+        1266,
+        724
+      ],
+      "circle_radius_px": 33,
+      "method": "Main lower-left portrait with level and number regions replaced by same-role same-side clean Tab pixels. No recoloring.",
+      "main_source": {
+        "pdf_page": 21,
+        "image_xref": 1853,
+        "circle_center_px": [
+          117,
+          1069
+        ],
+        "circle_radius_px": 70
+      },
+      "native_clean_tab_diameter_px": 66,
+      "output_size": [
+        256,
+        256
+      ]
+    },
+    "aerial_red.png": {
+      "pdf_page": 9,
+      "image_xref": 881,
+      "circle_center_px": [
+        168,
+        154
+      ],
+      "circle_radius_px": 101,
+      "output_size": [
+        256,
+        256
+      ],
+      "method": "Official aerial main portrait. Level badge lies in empty upper-left background and is replaced with a sampled dark portrait-background color; inner crop excludes faction rim. No invented robot pixels."
+    },
+    "sentry_red.png": {
+      "fallback": true,
+      "source_asset": "C:\\Users\\Tobby Tian\\DeskBox\\长期\\robomaster\\自定义客户端\\客户端\\assets\\reference\\robot_sentry.png",
+      "pdf_page": 3,
+      "original_screenshot_xref": 298,
+      "output_size": [
+        256,
+        256
+      ],
+      "method": "Existing official HUD robot thumbnail alpha texture, top 6px HUD flecks removed, centered without recoloring. Not claimed as an official circular portrait.",
+      "alternative": "No suitable clean circular portrait found in the inspected pages 3,9,10,11,12,21."
+    },
+    "sentry_blue.png": {
+      "fallback": true,
+      "source_asset": "C:\\Users\\Tobby Tian\\DeskBox\\长期\\robomaster\\自定义客户端\\客户端\\assets\\reference\\robot_sentry_blue.png",
+      "pdf_page": 3,
+      "original_screenshot_xref": 298,
+      "output_size": [
+        256,
+        256
+      ],
+      "method": "Existing official HUD robot thumbnail alpha texture, top 6px HUD flecks removed, centered without recoloring. Not claimed as an official circular portrait.",
+      "alternative": "No suitable clean circular portrait found in the inspected pages 3,9,10,11,12,21."
+    },
+    "aerial_blue.png": {
+      "fallback": true,
+      "source_asset": "C:\\Users\\Tobby Tian\\DeskBox\\长期\\robomaster\\自定义客户端\\客户端\\assets\\reference\\robot_aerial_blue.png",
+      "pdf_page": 3,
+      "original_screenshot_xref": 298,
+      "output_size": [
+        256,
+        256
+      ],
+      "method": "Existing official HUD robot thumbnail alpha texture, top 6px HUD flecks removed, centered without recoloring. Not claimed as an official circular portrait.",
+      "alternative": "No suitable clean circular portrait found in the inspected pages 3,9,10,11,12,21."
+    }
+  }
+}

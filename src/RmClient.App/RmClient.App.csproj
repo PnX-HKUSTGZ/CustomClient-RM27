@@ -1,0 +1,13 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>RmClient.App</RootNamespace>
+    <AssemblyName>RmClient.App</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RmClient.Core\RmClient.Core.csproj" />
+    <ProjectReference Include="..\RmClient.Transport\RmClient.Transport.csproj" />
+  </ItemGroup>
+</Project>

@@ -3,6 +3,7 @@ bin/
 obj/
 !src/RmClient.App/addons/rm_video/bin/
 !src/RmClient.App/addons/rm_video/bin/**
+src/RmClient.App/addons/rm_video/redistribution/*.zip
 *.user
 *.suo
 *.cache
